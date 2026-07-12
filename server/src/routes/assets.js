@@ -1,3 +1,7 @@
+// ==============================
+// Asset Routes
+// Handles asset CRUD operations
+// ==============================
 const express = require('express');
 const Asset = require('../models/Asset');
 const AssetCategory = require('../models/AssetCategory');
@@ -7,6 +11,10 @@ const { requireRole } = require('../middleware/roles');
 const { logActivity } = require('../utils/helpers');
 
 const router = express.Router();
+// ======================================================
+// GET /api/assets
+// Fetch all assets with filtering and search functionality
+// ======================================================
 
 router.get('/', protect, async (req, res) => {
   try {
