@@ -11,6 +11,7 @@ const Navbar = () => {
 
   useEffect(() => {
     if (user) {
+            // Load the current unread notification count for the logged-in user
       API.get('/notifications/unread-count').then(({ data }) => setUnread(data.count)).catch(() => {});
       const interval = setInterval(() => {
         API.get('/notifications/unread-count').then(({ data }) => setUnread(data.count)).catch(() => {});
@@ -20,6 +21,7 @@ const Navbar = () => {
   }, [user]);
 
   const handleLogout = () => {
+        // Clear session and send the user back to the login page
     logout();
     navigate('/login');
   };
