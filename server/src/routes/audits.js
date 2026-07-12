@@ -65,6 +65,20 @@ router.post('/', protect, requireRole('admin'), async (req, res) => {
   }
 });
 
+router.put('/:id', protect, requireRole('admin'), async (req, res) => {
+  try {
+    const { name, department, location, startDate, endDate, auditors } = req.body;
+    const cycle = await AuditCycle.findByIdAndUpdate(req.params.id,
+      { name, department, location, startDate, endDate, auditors }, { new: true }
+    ).populate('department', 'name').populate('auditors', 'name email').populate('createdBy', 'name');
+    if (!cycle) return res.status(404).json({ message: 'Audit cycle not found' });
+    await logActivity(req.user._id, 'Updated Audit Cycle', 'AuditCycle', cycle._id, { name });
+    res.json(cycle);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 router.put('/:id/status', protect, requireRole('admin'), async (req, res) => {
   try {
     const { status } = req.body;

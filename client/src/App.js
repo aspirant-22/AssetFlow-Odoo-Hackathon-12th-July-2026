@@ -45,7 +45,7 @@ const AppRoutes = () => {
       <Route path="/allocations" element={<PrivateRoute><AppLayout><AssetAllocation /></AppLayout></PrivateRoute>} />
       <Route path="/bookings" element={<PrivateRoute><AppLayout><ResourceBooking /></AppLayout></PrivateRoute>} />
       <Route path="/maintenance" element={<PrivateRoute><AppLayout><MaintenanceManagement /></AppLayout></PrivateRoute>} />
-      <Route path="/audits" element={<PrivateRoute roles={['admin']}><AppLayout><AssetAudit /></AppLayout></PrivateRoute>} />
+      <Route path="/audits" element={<PrivateRoute><AppLayout><AssetAudit /></AppLayout></PrivateRoute>} />
       <Route path="/reports" element={<PrivateRoute roles={['asset_manager', 'admin', 'department_head']}><AppLayout><Reports /></AppLayout></PrivateRoute>} />
       <Route path="/notifications" element={<PrivateRoute><AppLayout><NotificationsPage /></AppLayout></PrivateRoute>} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

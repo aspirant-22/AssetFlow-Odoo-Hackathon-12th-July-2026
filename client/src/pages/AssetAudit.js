@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import API from '../api/axios';
 import Modal from '../components/common/Modal';
 
 const AssetAudit = () => {
+  const { user } = useAuth();
   const [cycles, setCycles] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [employees, setEmployees] = useState([]);
@@ -15,6 +17,7 @@ const AssetAudit = () => {
   const [form, setForm] = useState({
     name: '', department: '', location: '', startDate: '', endDate: '', auditors: []
   });
+  const [editId, setEditId] = useState(null);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -33,11 +36,28 @@ const AssetAudit = () => {
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      await API.post('/audits', form);
+      if (editId) {
+        await API.put(`/audits/${editId}`, form);
+      } else {
+        await API.post('/audits', form);
+      }
       setShowModal(false);
+      setEditId(null);
       setForm({ name: '', department: '', location: '', startDate: '', endDate: '', auditors: [] });
       fetchData();
-    } catch (err) { alert(err.response?.data?.message || 'Error creating audit'); }
+    } catch (err) { alert(err.response?.data?.message || 'Error saving audit'); }
+  };
+
+  const openEdit = (cycle) => {
+    setEditId(cycle._id);
+    const toDateInput = (d) => d ? new Date(d).toISOString().split('T')[0] : '';
+    setForm({
+      name: cycle.name, department: cycle.department?._id || '',
+      location: cycle.location || '', startDate: toDateInput(cycle.startDate),
+      endDate: toDateInput(cycle.endDate),
+      auditors: cycle.auditors?.map(a => a._id) || []
+    });
+    setShowModal(true);
   };
 
   const viewCycle = async (id) => {
@@ -77,7 +97,7 @@ const AssetAudit = () => {
     <div className="page">
       <div className="page-header">
         <h1>Asset Audit</h1>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ New Audit Cycle</button>
+        <button className="btn btn-primary" onClick={() => { setEditId(null); setForm({ name: '', department: '', location: '', startDate: '', endDate: '', auditors: [] }); setShowModal(true); }}>+ New Audit Cycle</button>
       </div>
 
       <div className="card-grid">
@@ -97,6 +117,7 @@ const AssetAudit = () => {
                 <button className="btn btn-sm btn-outline" onClick={() => viewDiscrepancy(c._id)}>Discrepancies</button>
                 {c.status === 'open' && <button className="btn btn-sm btn-success" onClick={() => updateStatus(c._id, 'in_progress')}>Start Audit</button>}
                 {c.status === 'in_progress' && <button className="btn btn-sm btn-danger" onClick={() => updateStatus(c._id, 'closed')}>Close Cycle</button>}
+                {user?.role === 'admin' && <button className="btn btn-sm btn-outline" onClick={() => openEdit(c)}>✏️ Edit</button>}
               </div>
             </div>
           </div>
@@ -121,12 +142,14 @@ const AssetAudit = () => {
                     <td><span className={`badge status-${item.status}`}>{item.status}</span></td>
                     <td>{item.verifiedBy?.name || '-'}</td>
                     <td>
-                      {selectedCycle.status !== 'closed' && (
+                      {selectedCycle.status !== 'closed' && selectedCycle.auditors?.some(a => a._id === user?._id) ? (
                         <>
                           <button className="btn btn-sm btn-success" onClick={() => verifyItem(item._id, 'verified')}>✓</button>
                           <button className="btn btn-sm btn-warning ml-1" onClick={() => verifyItem(item._id, 'missing')}>?</button>
                           <button className="btn btn-sm btn-danger ml-1" onClick={() => verifyItem(item._id, 'damaged')}>!</button>
                         </>
+                      ) : (
+                        <span className="text-muted">—</span>
                       )}
                     </td>
                   </tr>
@@ -137,7 +160,7 @@ const AssetAudit = () => {
         </div>
       )}
 
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Create Audit Cycle" width="500px">
+      <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditId(null); setForm({ name: '', department: '', location: '', startDate: '', endDate: '', auditors: [] }); }} title={editId ? 'Edit Audit Cycle' : 'Create Audit Cycle'} width="500px">
         <form onSubmit={handleCreate}>
           <div className="form-group"><label>Name *</label><input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required /></div>
           <div className="form-row">
@@ -159,7 +182,7 @@ const AssetAudit = () => {
             </select>
             <small className="text-muted">Hold Ctrl/Cmd to select multiple</small>
           </div>
-          <button type="submit" className="btn btn-primary btn-block">Create Audit Cycle</button>
+          <button type="submit" className="btn btn-primary btn-block">{editId ? 'Update' : 'Create'} Audit Cycle</button>
         </form>
       </Modal>
 
