@@ -2,6 +2,7 @@ const express = require('express');
 const Asset = require('../models/Asset');
 const Allocation = require('../models/Allocation');
 const TransferRequest = require('../models/TransferRequest');
+const User = require('../models/User');
 const { protect } = require('../middleware/auth');
 const { requireRole } = require('../middleware/roles');
 const { logActivity, createNotification } = require('../utils/helpers');
@@ -113,9 +114,9 @@ router.get('/transfer-requests', protect, async (req, res) => {
 
 router.post('/transfer-requests', protect, requireRole('employee'), async (req, res) => {
   try {
-    const { asset, fromEmployee, toEmployee, notes } = req.body;
+    const { asset, fromEmployee, notes } = req.body;
     const transferReq = await TransferRequest.create({
-      asset, fromEmployee, toEmployee, requestedBy: req.user._id, notes
+      asset, fromEmployee, toEmployee: null, requestedBy: req.user._id, notes
     });
     await logActivity(req.user._id, 'Created Transfer Request', 'TransferRequest', transferReq._id);
     res.status(201).json(transferReq);
@@ -126,22 +127,27 @@ router.post('/transfer-requests', protect, requireRole('employee'), async (req, 
 
 router.put('/transfer-requests/:id', protect, requireRole('asset_manager', 'department_head', 'admin'), async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, toEmployee } = req.body;
     const transferReq = await TransferRequest.findById(req.params.id)
       .populate('asset').populate('fromEmployee').populate('toEmployee');
     if (!transferReq) return res.status(404).json({ message: 'Transfer request not found' });
     if (status === 'approved') {
       transferReq.status = 'approved';
       transferReq.approvedBy = req.user._id;
-      const asset = await Asset.findById(transferReq.asset._id);
-      asset.currentHolder = transferReq.toEmployee._id;
-      await asset.save();
-      await Allocation.create({
-        asset: transferReq.asset._id,
-        employee: transferReq.toEmployee._id,
-        allocatedBy: req.user._id,
-        notes: `Transfer from ${transferReq.fromEmployee.name}`
-      });
+      const targetId = toEmployee || transferReq.toEmployee?._id;
+      if (targetId) {
+        transferReq.toEmployee = targetId;
+        const asset = await Asset.findById(transferReq.asset._id);
+        asset.currentHolder = targetId;
+        await asset.save();
+        await Allocation.create({
+          asset: transferReq.asset._id,
+          employee: targetId,
+          allocatedBy: req.user._id,
+          notes: `Transfer from ${transferReq.fromEmployee.name}`
+        });
+        const targetUser = await User.findById(targetId);
+      }
       const oldAlloc = await Allocation.findOne({
         asset: transferReq.asset._id, employee: transferReq.fromEmployee._id, status: 'active'
       });
@@ -150,9 +156,12 @@ router.put('/transfer-requests/:id', protect, requireRole('asset_manager', 'depa
         oldAlloc.returnedDate = new Date();
         await oldAlloc.save();
       }
-      await createNotification(transferReq.toEmployee._id, 'Transfer Approved',
-        `Asset ${transferReq.asset.name} has been transferred to you.`, 'transfer_approved',
-        { kind: 'Asset', id: transferReq.asset._id });
+      if (!targetId) {
+        const asset = await Asset.findById(transferReq.asset._id);
+        asset.status = 'available';
+        asset.currentHolder = null;
+        await asset.save();
+      }
     } else if (status === 'rejected') {
       transferReq.status = 'rejected';
       transferReq.approvedBy = req.user._id;

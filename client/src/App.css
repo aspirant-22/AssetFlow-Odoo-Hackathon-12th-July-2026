@@ -518,6 +518,8 @@ a:hover { text-decoration: underline; }
 /* ===== Audit ===== */
 .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
 .btn-group { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+.approve-row { display: flex; align-items: center; gap: 4px; }
+.approve-row select { padding: 4px 8px; font-size: 12px; border: 1px solid var(--light-gray); border-radius: 4px; max-width: 140px; }
 
 /* ===== Heatmap ===== */
 .heatmap { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }

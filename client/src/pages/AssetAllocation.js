@@ -20,6 +20,7 @@ const AssetAllocation = () => {
   const [transferForm, setTransferForm] = useState({ asset: '', fromEmployee: '', toEmployee: '', notes: '' });
   const [returnNote, setReturnNote] = useState('');
   const [blockError, setBlockError] = useState('');
+  const [approveTarget, setApproveTarget] = useState({ id: null, show: false, employee: '' });
 
   useEffect(() => { fetchData(); }, []);
 
@@ -81,9 +82,10 @@ const AssetAllocation = () => {
     } catch (err) { alert(err.response?.data?.message || 'Error creating transfer'); }
   };
 
-  const handleTransferStatus = async (id, status) => {
+  const handleTransferStatus = async (id, status, toEmployee) => {
     try {
-      await API.put(`/allocations/transfer-requests/${id}`, { status });
+      await API.put(`/allocations/transfer-requests/${id}`, { status, toEmployee });
+      setApproveTarget({ id: null, show: false, employee: '' });
       fetchData();
     } catch (err) { alert(err.response?.data?.message || 'Error updating transfer'); }
   };
@@ -123,13 +125,26 @@ const AssetAllocation = () => {
               <tbody>
                 {transferReqs.filter(r => r.status === 'pending').map(r => (
                   <tr key={r._id}>
-                    <td>{r.asset?.name}</td><td>{r.fromEmployee?.name}</td><td>{r.toEmployee?.name}</td>
+                    <td>{r.asset?.name}</td><td>{r.fromEmployee?.name}</td><td>{r.toEmployee?.name || '—'}</td>
                     <td><span className={`badge ${r.status}`}>{r.status}</span></td>
                     <td>
                       {['asset_manager', 'department_head', 'admin'].includes(user?.role) && (
                         <>
-                          <button className="btn btn-sm btn-success" onClick={() => handleTransferStatus(r._id, 'approved')}>Approve</button>
-                          <button className="btn btn-sm btn-danger ml-1" onClick={() => handleTransferStatus(r._id, 'rejected')}>Reject</button>
+                          {approveTarget.id === r._id ? (
+                            <div className="approve-row">
+                              <select value={approveTarget.employee} onChange={e => setApproveTarget({ ...approveTarget, employee: e.target.value })}>
+                                <option value="">Select employee</option>
+                                {employees.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
+                              </select>
+                              <button className="btn btn-sm btn-success" disabled={!approveTarget.employee} onClick={() => handleTransferStatus(r._id, 'approved', approveTarget.employee)}>Confirm</button>
+                              <button className="btn btn-sm" onClick={() => setApproveTarget({ id: null, show: false, employee: '' })}>Cancel</button>
+                            </div>
+                          ) : (
+                            <>
+                              <button className="btn btn-sm btn-success" onClick={() => setApproveTarget({ id: r._id, show: true, employee: '' })}>Approve</button>
+                              <button className="btn btn-sm btn-danger ml-1" onClick={() => handleTransferStatus(r._id, 'rejected')}>Reject</button>
+                            </>
+                          )}
                         </>
                       )}
                     </td>
@@ -203,21 +218,20 @@ const AssetAllocation = () => {
       <Modal isOpen={showTransferModal} onClose={() => setShowTransferModal(false)} title="Request Transfer" width="500px">
         <form onSubmit={handleTransfer}>
           <div className="form-group"><label>Asset *</label>
-            <select value={transferForm.asset} onChange={e => setTransferForm({ ...transferForm, asset: e.target.value })} required>
+            <select value={transferForm.asset} onChange={e => {
+              const asset = assets.find(a => a._id === e.target.value);
+              setTransferForm({ ...transferForm, asset: e.target.value, fromEmployee: asset?.currentHolder?._id || '' });
+            }} required>
               <option value="">Select asset</option>
               {assets.filter(a => a.status === 'allocated').map(a => (
-                <option key={a._id} value={a._id}>{a.name} ({a.assetTag}) - {a.currentHolder?.name}</option>
+                <option key={a._id} value={a._id}>{a.name} ({a.assetTag}) — held by {a.currentHolder?.name || 'Unknown'}</option>
               ))}
+              {assets.filter(a => a.status === 'allocated').length === 0 && (
+                <option value="" disabled>No allocated assets</option>
+              )}
             </select>
           </div>
-          <div className="form-group"><label>From Employee</label><input value={transferForm.fromEmployee ? employees.find(e => e._id === transferForm.fromEmployee)?.name || '' : ''} disabled /></div>
-          <div className="form-group"><label>To Employee *</label>
-            <select value={transferForm.toEmployee} onChange={e => setTransferForm({ ...transferForm, toEmployee: e.target.value })} required>
-              <option value="">Select employee</option>
-              {employees.map(e => <option key={e._id} value={e._id}>{e.name}</option>)}
-            </select>
-          </div>
-          <div className="form-group"><label>Notes</label><textarea value={transferForm.notes} onChange={e => setTransferForm({ ...transferForm, notes: e.target.value })}></textarea></div>
+          <div className="form-group"><label>Notes</label><textarea value={transferForm.notes} onChange={e => setTransferForm({ ...transferForm, notes: e.target.value })} rows={3} placeholder="Reason for transfer request"></textarea></div>
           <button type="submit" className="btn btn-primary btn-block">Submit Transfer Request</button>
         </form>
       </Modal>
