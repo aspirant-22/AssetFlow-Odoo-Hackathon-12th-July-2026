@@ -1,4 +1,7 @@
-/* ===== CSS Variables ===== */
+/* ==========================================
+   Global Theme Variables
+   Defines colors, spacing, shadows and sizes
+========================================== */
 :root {
   --primary: #1a73e8;
   --primary-dark: #1557b0;
@@ -32,8 +35,10 @@ body {
 
 a { color: var(--primary); text-decoration: none; }
 a:hover { text-decoration: underline; }
-
-/* ===== Auth Pages ===== */
+/* ==========================================
+   Authentication Page Styling
+   Login & Register UI
+========================================== */
 .auth-page {
   min-height: 100vh;
   display: flex;
@@ -119,7 +124,9 @@ a:hover { text-decoration: underline; }
 
 /* ===== App Layout ===== */
 .app-layout { min-height: 100vh; }
-
+/********************************************
+  Navigation Bar
+*********************************************/
 .navbar {
   height: var(--navbar-height);
   background: var(--card-bg);
