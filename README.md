@@ -165,6 +165,16 @@ The React application includes:
 - `npm start` - run React dev server
 - `npm run build` - create production build
 
+  ## Screenshots
+
+### Login
+
+<img width="1600" height="900" alt="Login Page" src="https://github.com/user-attachments/assets/9e1cc20a-efdc-4779-b87b-1189e029de36" />
+
+### Dashboard
+
+<img width="1600" height="900" alt="Dashboard" src="https://github.com/user-attachments/assets/760f56f0-16e2-4348-8303-ddf4f5132c6d" />
+
 ## 📌 Notes
 
 - The frontend uses a proxy configuration to forward `/api` requests to the backend.
