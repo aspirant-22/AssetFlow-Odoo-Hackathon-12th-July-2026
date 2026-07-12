@@ -4,7 +4,9 @@ import API from '../api/axios';
 import Modal from '../components/common/Modal';
 
 const MaintenanceManagement = () => {
+  // Get logged-in user details
   const { user } = useAuth();
+    // State for maintenance requests and available assets
   const [requests, setRequests] = useState([]);
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(true);
