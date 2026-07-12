@@ -2,6 +2,10 @@
 
 AssetFlow is an enterprise-style asset and resource management web application built for hackathon delivery. It combines a React frontend with an Express + MongoDB backend to manage assets, allocations, bookings, maintenance requests, audits, reports, notifications, and organization setup.
 
+
+#### Deployed Link : https://asset-flow-odoo-hackathon-12th-july.vercel.app/login
+
+
 ## 🚀 Project Overview
 
 This project provides a complete asset lifecycle management solution:
