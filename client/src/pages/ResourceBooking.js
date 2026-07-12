@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import API from '../api/axios';
 import Modal from '../components/common/Modal';
 
 const ResourceBooking = () => {
+  const { user } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -90,7 +92,9 @@ const ResourceBooking = () => {
                   <div className="booking-actions">
                     <span className={`badge ${b.status}`}>{b.status}</span>
                     {b.status !== 'cancelled' && b.status !== 'completed' && (
-                      <button className="btn btn-sm btn-danger" onClick={() => handleCancel(b._id)}>Cancel</button>
+                      (user?._id === b.booker?._id || user?.role === 'admin' || user?.role === 'department_head') && (
+                        <button className="btn btn-sm btn-danger" onClick={() => handleCancel(b._id)}>Cancel</button>
+                      )
                     )}
                   </div>
                 </div>
