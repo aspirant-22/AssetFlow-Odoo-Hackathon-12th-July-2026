@@ -111,7 +111,7 @@ router.get('/transfer-requests', protect, async (req, res) => {
   }
 });
 
-router.post('/transfer-requests', protect, async (req, res) => {
+router.post('/transfer-requests', protect, requireRole('employee'), async (req, res) => {
   try {
     const { asset, fromEmployee, toEmployee, notes } = req.body;
     const transferReq = await TransferRequest.create({

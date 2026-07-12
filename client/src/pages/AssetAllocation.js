@@ -100,7 +100,7 @@ const AssetAllocation = () => {
           {['asset_manager', 'department_head', 'admin'].includes(user?.role) && (
             <button className="btn btn-primary" onClick={() => setShowAllocModal(true)}>+ Allocate Asset</button>
           )}
-          <button className="btn btn-outline ml-2" onClick={() => setShowTransferModal(true)}>Request Transfer</button>
+          {user?.role === 'employee' && <button className="btn btn-outline ml-2" onClick={() => setShowTransferModal(true)}>Request Transfer</button>}
         </div>
       </div>
 
