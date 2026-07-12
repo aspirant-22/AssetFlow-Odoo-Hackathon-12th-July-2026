@@ -195,7 +195,3 @@ The React application includes:
 - Add pagination and filtering for large asset inventories
 - Add real-time notifications with WebSockets
 - Add user profile and password management pages
-
----
-
-Enjoy working with AssetFlow! If you want, I can also add a `docker-compose` setup or a quick start script.
