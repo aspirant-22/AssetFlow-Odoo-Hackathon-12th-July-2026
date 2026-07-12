@@ -15,8 +15,10 @@ const AssetDirectory = () => {
   const [filters, setFilters] = useState({ status: '', category: '', department: '' });
   const [form, setForm] = useState({
     name: '', category: '', serialNumber: '', acquisitionDate: '',
-    acquisitionCost: '', condition: 'new', location: '', isBookable: false, department: ''
+    acquisitionCost: '', condition: 'new', location: '', isBookable: false, department: '',
+    documents: []
   });
+  const [docNames, setDocNames] = useState([]);
 
   useEffect(() => { fetchAssets(); fetchCategories(); fetchDepartments(); }, []);
 
@@ -49,12 +51,24 @@ const AssetDirectory = () => {
 
   useEffect(() => { fetchAssets(); }, [search, filters]);
 
+  const handleDocUpload = (e) => {
+    const files = Array.from(e.target.files);
+    const names = files.map(f => f.name);
+    setDocNames(names);
+    Promise.all(files.map(f => new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.readAsDataURL(f);
+    }))).then(results => setForm({ ...form, documents: results }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await API.post('/assets', form);
       setShowModal(false);
-      setForm({ name: '', category: '', serialNumber: '', acquisitionDate: '', acquisitionCost: '', condition: 'new', location: '', isBookable: false, department: '' });
+      setForm({ name: '', category: '', serialNumber: '', acquisitionDate: '', acquisitionCost: '', condition: 'new', location: '', isBookable: false, department: '', documents: [] });
+      setDocNames([]);
       fetchAssets();
     } catch (err) { alert(err.response?.data?.message || 'Error registering asset'); }
   };
@@ -149,6 +163,12 @@ const AssetDirectory = () => {
           <div className="form-group">
             <label><input type="checkbox" checked={form.isBookable} onChange={e => setForm({ ...form, isBookable: e.target.checked })} /> Shared/Bookable Resource</label>
           </div>
+          <div className="form-group"><label>Documents (warranty, invoice, etc.)</label>
+            <input type="file" multiple accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg" onChange={handleDocUpload} />
+            {docNames.length > 0 && (
+              <ul className="doc-list">{docNames.map((n, i) => <li key={i}>{n}</li>)}</ul>
+            )}
+          </div>
           <button type="submit" className="btn btn-primary btn-block">Register Asset</button>
         </form>
       </Modal>
@@ -182,6 +202,18 @@ const AssetDirectory = () => {
                 )) || <tr><td colSpan={4} className="text-center">No history</td></tr>}
               </tbody>
             </table>
+            {showDetail.asset?.documents?.length > 0 && (
+              <>
+                <h4 style={{ marginTop: 20 }}>Documents</h4>
+                <ul className="doc-list">
+                  {showDetail.asset.documents.map((doc, i) => (
+                    <li key={i}>
+                      <a href={doc} target="_blank" rel="noopener noreferrer">Document {i + 1}</a>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
           </div>
         )}
       </Modal>

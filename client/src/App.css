@@ -630,6 +630,22 @@ a:hover { text-decoration: underline; }
 }
 .mt-1 { margin-top: 4px; }
 
+.doc-list {
+  list-style: disc;
+  padding-left: 20px;
+  margin-top: 8px;
+}
+.doc-list li {
+  margin-bottom: 4px;
+}
+.doc-list a {
+  color: var(--primary);
+  text-decoration: none;
+}
+.doc-list a:hover {
+  text-decoration: underline;
+}
+
 /* ===== Print ===== */
 @media print {
   .sidebar, .navbar { display: none; }

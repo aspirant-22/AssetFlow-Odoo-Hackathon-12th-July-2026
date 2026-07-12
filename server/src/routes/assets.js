@@ -63,13 +63,14 @@ router.post('/', protect, requireRole('asset_manager', 'admin'), async (req, res
   try {
     const {
       name, category, serialNumber, acquisitionDate, acquisitionCost,
-      condition, location, isBookable, department
+      condition, location, isBookable, department, documents, photo
     } = req.body;
     const cat = await AssetCategory.findById(category);
     if (!cat) return res.status(400).json({ message: 'Invalid category' });
     const asset = await Asset.create({
       name, category, serialNumber, acquisitionDate, acquisitionCost,
-      condition, location, isBookable: isBookable || false, department
+      condition, location, isBookable: isBookable || false, department,
+      documents: documents || [], photo: photo || ''
     });
     await logActivity(req.user._id, 'Registered Asset', 'Asset', asset._id, { name, assetTag: asset.assetTag });
     const populated = await Asset.findById(asset._id)
@@ -85,12 +86,13 @@ router.put('/:id', protect, requireRole('asset_manager', 'admin'), async (req, r
   try {
     const {
       name, category, serialNumber, acquisitionDate, acquisitionCost,
-      condition, location, isBookable, status, department
+      condition, location, isBookable, status, department, documents, photo
     } = req.body;
-    const asset = await Asset.findByIdAndUpdate(req.params.id,
-      { name, category, serialNumber, acquisitionDate, acquisitionCost, condition, location, isBookable, status, department },
-      { new: true }
-    ).populate('category', 'name').populate('department', 'name');
+    const update = { name, category, serialNumber, acquisitionDate, acquisitionCost, condition, location, isBookable, status, department };
+    if (documents) update.documents = documents;
+    if (photo) update.photo = photo;
+    const asset = await Asset.findByIdAndUpdate(req.params.id, update, { new: true })
+      .populate('category', 'name').populate('department', 'name');
     if (!asset) return res.status(404).json({ message: 'Asset not found' });
     await logActivity(req.user._id, 'Updated Asset', 'Asset', asset._id);
     res.json(asset);
