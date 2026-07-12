@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const assetSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   category: { type: mongoose.Schema.Types.ObjectId, ref: 'AssetCategory', required: true },
-  assetTag: { type: String, unique: true, required: true },
+  assetTag: { type: String, unique: true },
   serialNumber: { type: String, default: '' },
   acquisitionDate: { type: Date, default: null },
   acquisitionCost: { type: Number, default: 0 },

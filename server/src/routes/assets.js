@@ -22,7 +22,7 @@ router.get('/', protect, async (req, res) => {
         { name: { $regex: req.query.search, $options: 'i' } }
       ];
     }
-    if (req.query.isBookable) query.isBookable = req.query.isBookable === 'true';
+    if (req.query.isBookable !== undefined) query.isBookable = req.query.isBookable === 'true';
     const assets = await Asset.find(query)
       .populate('category', 'name')
       .populate('currentHolder', 'name email')
