@@ -3,23 +3,30 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
+  // State variables for user inputs and UI status
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  // Authentication context
   const { login } = useAuth();
+  // Hook for page navigation
   const navigate = useNavigate();
-
+// Handle login form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
+      // Authenticate user
       await login(email, password);
+       // Redirect to dashboard after successful login
       navigate('/dashboard');
     } catch (err) {
+      // Display error message if login fails
       setError(err.response?.data?.message || 'Login failed');
     } finally {
+       // Stop loading indicator
       setLoading(false);
     }
   };
