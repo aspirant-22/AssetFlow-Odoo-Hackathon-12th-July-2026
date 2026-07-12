@@ -31,7 +31,12 @@ router.post('/', protect, requireRole('admin'), async (req, res) => {
     const { name, description, head, parentDepartment } = req.body;
     const dept = await Department.create({ name, description, head, parentDepartment });
     if (head) {
-      await User.findByIdAndUpdate(head, { department: dept._id, role: 'department_head' });
+      const user = await User.findById(head);
+      if (user && user.role !== 'admin') {
+        user.department = dept._id;
+        user.role = 'department_head';
+        await user.save();
+      }
     }
     await logActivity(req.user._id, 'Created Department', 'Department', dept._id, { name });
     res.status(201).json(dept);
@@ -48,7 +53,12 @@ router.put('/:id', protect, requireRole('admin'), async (req, res) => {
     ).populate('head', 'name email');
     if (!dept) return res.status(404).json({ message: 'Department not found' });
     if (head) {
-      await User.findByIdAndUpdate(head, { department: dept._id, role: 'department_head' });
+      const user = await User.findById(head);
+      if (user && user.role !== 'admin') {
+        user.department = dept._id;
+        user.role = 'department_head';
+        await user.save();
+      }
     }
     await logActivity(req.user._id, 'Updated Department', 'Department', dept._id, { name });
     res.json(dept);

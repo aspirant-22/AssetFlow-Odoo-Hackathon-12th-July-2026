@@ -13,7 +13,7 @@ const ForgotPassword = () => {
     setMessage('');
     try {
       const { data } = await API.post('/auth/forgot-password', { email });
-      setMessage(data.message + ' (simulated)');
+      setMessage(data.message);
     } catch (err) {
       setError(err.response?.data?.message || 'Request failed');
     }

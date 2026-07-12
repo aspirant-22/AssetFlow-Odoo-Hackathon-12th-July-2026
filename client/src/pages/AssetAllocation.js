@@ -7,6 +7,7 @@ const AssetAllocation = () => {
   const { user } = useAuth();
   const [allocations, setAllocations] = useState([]);
   const [assets, setAssets] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [transferReqs, setTransferReqs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,14 +25,16 @@ const AssetAllocation = () => {
 
   const fetchData = async () => {
     try {
-      const [allocRes, assetRes, empRes, transferRes] = await Promise.all([
+      const [allocRes, assetRes, deptRes, empRes, transferRes] = await Promise.all([
         API.get('/allocations'),
         API.get('/assets'),
+        API.get('/departments'),
         API.get('/employees', { params: { status: 'active' } }),
         API.get('/allocations/transfer-requests')
       ]);
       setAllocations(allocRes.data);
       setAssets(assetRes.data);
+      setDepartments(deptRes.data);
       setEmployees(empRes.data);
       setTransferReqs(transferRes.data);
     } catch (e) { console.error(e); }
@@ -175,18 +178,19 @@ const AssetAllocation = () => {
             </select>
           </div>
           <div className="form-group"><label>Employee *</label>
-            <select value={form.employee} onChange={e => setForm({ ...form, employee: e.target.value })} required>
+            <select value={form.employee} onChange={e => {
+              const emp = employees.find(emp => emp._id === e.target.value);
+              setForm({ ...form, employee: e.target.value, department: emp?.department?._id || '' });
+            }} required>
               <option value="">Select employee</option>
-              {employees.map(e => <option key={e._id} value={e._id}>{e.name} ({e.email})</option>)}
+              {employees.map(e => <option key={e._id} value={e._id}>{e.name} ({e.email}){e.department ? ` - ${e.department.name}` : ''}</option>)}
             </select>
           </div>
           <div className="form-group"><label>Department</label>
             <select value={form.department} onChange={e => setForm({ ...form, department: e.target.value })}>
               <option value="">None</option>
-              {employees.filter(e => e.department).map((e, i, arr) =>
-                arr.findIndex(x => x.department?._id === e.department?._id) === i
-              ).map(e => (
-                <option key={e.department?._id} value={e.department?._id}>{e.department?.name}</option>
+              {departments.filter(d => d.status === 'active').map(d => (
+                <option key={d._id} value={d._id}>{d.name}</option>
               ))}
             </select>
           </div>

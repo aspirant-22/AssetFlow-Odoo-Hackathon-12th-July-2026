@@ -7,6 +7,7 @@ import Sidebar from './components/layout/Sidebar';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import OrganizationSetup from './pages/OrganizationSetup';
 import AssetDirectory from './pages/AssetDirectory';
@@ -39,6 +40,7 @@ const AppRoutes = () => {
       <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <Login />} />
       <Route path="/signup" element={user ? <Navigate to="/dashboard" replace /> : <Signup />} />
       <Route path="/forgot-password" element={user ? <Navigate to="/dashboard" replace /> : <ForgotPassword />} />
+      <Route path="/reset-password/:token" element={user ? <Navigate to="/dashboard" replace /> : <ResetPassword />} />
       <Route path="/dashboard" element={<PrivateRoute><AppLayout><Dashboard /></AppLayout></PrivateRoute>} />
       <Route path="/organization" element={<PrivateRoute roles={['admin']}><AppLayout><OrganizationSetup /></AppLayout></PrivateRoute>} />
       <Route path="/assets" element={<PrivateRoute><AppLayout><AssetDirectory /></AppLayout></PrivateRoute>} />
