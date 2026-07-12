@@ -172,8 +172,8 @@ The React application includes:
 <img width="1600" height="900" alt="Login Page" src="https://github.com/user-attachments/assets/9e1cc20a-efdc-4779-b87b-1189e029de36" />
 
 ### Dashboard
+<img width="1600" height="900" alt="dashboard" src="https://github.com/user-attachments/assets/6965330e-14de-4d32-a334-03c022dae8ed" />
 
-<img width="1600" height="900" alt="Dashboard" src="https://github.com/user-attachments/assets/760f56f0-16e2-4348-8303-ddf4f5132c6d" />
 
 ## 📌 Notes
 
