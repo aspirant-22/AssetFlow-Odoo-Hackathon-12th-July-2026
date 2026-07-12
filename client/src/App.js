@@ -1,9 +1,21 @@
+// ============================================
+// Import React and Routing Dependencies
+// ============================================
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+// ============================================
+// Import Authentication Context
+// ============================================
 import { AuthProvider, useAuth } from './context/AuthContext';
+// ============================================
+// Import Layout Components
+// ============================================
 import PrivateRoute from './components/layout/PrivateRoute';
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
+// ============================================
+// Import Application Pages
+// ============================================
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
@@ -19,6 +31,10 @@ import Reports from './pages/Reports';
 import NotificationsPage from './pages/NotificationsPage';
 import './App.css';
 
+// ============================================
+// Main Application Layout
+// Displays Navbar, Sidebar and Page Content
+// ============================================
 const AppLayout = ({ children }) => {
   const { user } = useAuth();
   if (!user) return null;
@@ -32,7 +48,10 @@ const AppLayout = ({ children }) => {
     </div>
   );
 };
-
+// ============================================
+// Application Routes
+// Handles Public and Protected Routes
+// ============================================
 const AppRoutes = () => {
   const { user } = useAuth();
   return (
