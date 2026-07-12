@@ -99,7 +99,7 @@ const AssetAllocation = () => {
       <div className="page-header">
         <h1>Asset Allocation & Transfers</h1>
         <div>
-          {['asset_manager', 'department_head', 'admin'].includes(user?.role) && (
+          {user?.role === 'asset_manager' && (
             <button className="btn btn-primary" onClick={() => setShowAllocModal(true)}>+ Allocate Asset</button>
           )}
           {user?.role === 'employee' && <button className="btn btn-outline ml-2" onClick={() => setShowTransferModal(true)}>Request Transfer</button>}
