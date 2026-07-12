@@ -12,6 +12,8 @@ const MaintenanceManagement = () => {
   const [showResolveModal, setShowResolveModal] = useState(false);
   const [selectedReq, setSelectedReq] = useState(null);
   const [form, setForm] = useState({ asset: '', description: '', priority: 'medium', photo: '' });
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [viewPhoto, setViewPhoto] = useState(null);
   const [resolveForm, setResolveForm] = useState({ technician: '', resolutionNotes: '' });
 
   useEffect(() => { fetchData(); }, []);
@@ -30,14 +32,29 @@ const MaintenanceManagement = () => {
     setLoading(false);
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setPhotoPreview(URL.createObjectURL(file));
+    const reader = new FileReader();
+    reader.onload = () => setForm({ ...form, photo: reader.result });
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await API.post('/maintenance', form);
       setShowModal(false);
       setForm({ asset: '', description: '', priority: 'medium', photo: '' });
+      setPhotoPreview(null);
       fetchData();
     } catch (err) { alert(err.response?.data?.message || 'Error raising request'); }
+  };
+
+  const clearPhoto = () => {
+    setForm({ ...form, photo: '' });
+    setPhotoPreview(null);
   };
 
   const handleAction = async (id, status) => {
@@ -70,7 +87,7 @@ const MaintenanceManagement = () => {
 
       <table className="table">
         <thead>
-          <tr><th>Asset</th><th>Requested By</th><th>Priority</th><th>Status</th><th>Date</th><th>Actions</th></tr>
+          <tr><th>Asset</th><th>Requested By</th><th>Priority</th><th>Status</th><th>Date</th><th>Photo</th><th>Actions</th></tr>
         </thead>
         <tbody>
           {requests.map(r => (
@@ -80,6 +97,7 @@ const MaintenanceManagement = () => {
               <td><span className={`badge priority-${r.priority}`}>{r.priority}</span></td>
               <td><span className={`badge status-${r.status}`}>{r.status.replace('_', ' ')}</span></td>
               <td>{new Date(r.createdAt).toLocaleDateString()}</td>
+              <td>{r.photo ? <img src={r.photo} alt="damage" className="photo-thumb" onClick={() => setViewPhoto(r.photo)} /> : '—'}</td>
               <td>
                 {['asset_manager', 'admin'].includes(user?.role) && r.status === 'pending' && (
                   <>
@@ -117,9 +135,24 @@ const MaintenanceManagement = () => {
               <option value="high">High</option><option value="critical">Critical</option>
             </select>
           </div>
+          <div className="form-group"><label>Damaged Asset Photo</label>
+            <input type="file" accept="image/*" onChange={handleFileChange} />
+            {photoPreview && (
+              <div className="photo-preview">
+                <img src={photoPreview} alt="Preview" />
+                <button type="button" className="btn btn-sm btn-danger mt-1" onClick={clearPhoto}>Remove</button>
+              </div>
+            )}
+          </div>
           <button type="submit" className="btn btn-primary btn-block">Submit Request</button>
         </form>
       </Modal>
+
+      {viewPhoto && (
+        <Modal isOpen={!!viewPhoto} onClose={() => setViewPhoto(null)} title="Damaged Asset Photo" width="600px">
+          <img src={viewPhoto} alt="Damaged asset" style={{ width: '100%', borderRadius: 4 }} />
+        </Modal>
+      )}
 
       <Modal isOpen={showResolveModal} onClose={() => setShowResolveModal(false)} title="Resolve Maintenance" width="450px">
         <div>
